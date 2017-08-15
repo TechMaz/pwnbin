@@ -1,5 +1,6 @@
 # PwnBin
 
+Fork by TechMaz : Now just scrapes all email addresses from pastebin as they show up.
 
 ## What is PwnBin
   PwnBin is a webcrawler which searches public pastebins for specified keywords.
@@ -10,11 +11,10 @@ All pastes are then returned after sending completion signal ctrl+c.
   
   Basic command:
   
-    python pwnbin.py -k <keyword1>,"example substring",<keyword2>..... -o <outputfile>
+    python pwnbin.py -o <outputfile>
   
-  Both the keyword and outputfile arguments are optional and default to 
+  outputfile argument is optional and default to 
 
-    -k ssh,pass,key,token
     -o log.txt
 
   Optional command:
