@@ -5,6 +5,7 @@ import sys, getopt
 from bs4 import BeautifulSoup
 from StringIO import StringIO
 import gzip
+import re
 
 def main(argv):
 
@@ -15,7 +16,7 @@ def main(argv):
 	root_url 								= 'http://pastebin.com'
 	raw_url 								= 'http://pastebin.com/raw/'
 	start_time								= datetime.datetime.now()
-	file_name, keywords, append, run_time, match_total, crawl_total = initialize_options(argv)
+	file_name, append, run_time, match_total, crawl_total = initialize_options(argv)
 
 	print "\nCrawling %s Press ctrl+c to save file to %s" % (root_url, file_name)
 
@@ -38,7 +39,7 @@ def main(argv):
 					
 					#	Add the pastes url to found_keywords if it contains keywords
 					raw_paste = raw_url+paste
-					found_keywords = find_keywords(raw_paste, found_keywords, keywords)
+					found_keywords = find_keywords(raw_paste, found_keywords)
 
 				else:
 
@@ -117,14 +118,13 @@ def find_new_pastes(root_html):
 
 	return new_pastes
 
-def find_keywords(raw_url, found_keywords, keywords):
+def find_keywords(raw_url, found_keywords):
 	paste = fetch_page(raw_url)
+	found_emails = set(re.findall(r"[a-z0-9\.\-+_]+@[a-z0-9\.\-+_]+\.[a-z]+", paste, re.I));
 
-	#	Todo: Add in functionality to rank hit based on how many of the keywords it contains
-	for keyword in keywords:
-		if paste.find(keyword) != -1:
-			found_keywords.append("found " + keyword + " in " + raw_url + "\n")
-			break
+	if found_emails != None:
+		for email in found_emails:
+			found_keywords.append("found email " + email + " in " + raw_url + "\n")
 
 	return found_keywords
 
@@ -138,7 +138,6 @@ def fetch_page(page):
 		return response.read()
 
 def initialize_options(argv):
-	keywords 			= ['ssh', 'pass', 'key', 'token']
 	file_name 			= 'log.txt'
 	append 				= False
 	run_time 			= 0
@@ -146,20 +145,18 @@ def initialize_options(argv):
 	crawl_total	 		= None
 
 	try:
-		opts, args = getopt.getopt(argv,"h:k:o:t:n:m:a")
+		opts, args = getopt.getopt(argv,"h:o:t:n:m:a")
 	except getopt.GetoptError:
-		print 'pwnbin.py -k <keyword1>,<keyword2>,<keyword3>..... -o <outputfile>'
+		print 'pwnbin.py -o <outputfile>'
 		sys.exit(2)
 
 	for opt, arg in opts:
 
 		if opt == '-h':
-			print 'pwnbin.py -k <keyword1>,<keyword2>,<keyword3>..... -o <outputfile>'
+			print 'pwnbin.py -o <outputfile>'
 			sys.exit()
 		elif opt == '-a':
 			append = True
-		elif opt == "-k":
-			keywords = set(arg.split(","))
 		elif opt == "-o":
 			file_name = arg
 		elif opt == "-t":
@@ -182,7 +179,7 @@ def initialize_options(argv):
 				print "Number of total crawled pastes must be an integer."
 				sys.exit()
 
-	return file_name, keywords, append, run_time, match_total, crawl_total
+	return file_name, append, run_time, match_total, crawl_total
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
